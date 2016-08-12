@@ -1,6 +1,7 @@
 <?php
 namespace App;
 use Cache;
+use GeoIp2\Database\Reader;
 
 /**
  * EU Vat helper functions
@@ -21,12 +22,14 @@ class euvat {
      * @param boolean $force_geioip, forces the usage of geoip not cloudflare
      * @return string             
      */
-    public static function country_code($ip_address=NULL, $force_geoip = FALSE)
+    public static function countryCodeByIP($ip_address, $force_geoip = FALSE)
     {
+        $countryCode = NULL;
+
         //cloudflare installed? no ip?
         if ($ip_address===NULL AND !empty($_SERVER["HTTP_CF_IPCOUNTRY"]) AND !$force_geoip )
         {
-            $country_code = $_SERVER["HTTP_CF_IPCOUNTRY"];
+            $countryCode = $_SERVER["HTTP_CF_IPCOUNTRY"];
         }
         //no cloudflare installed or forced try geoip
         else
@@ -34,60 +37,68 @@ class euvat {
             if ($ip_address===NULL)
                 $ip_address = Request::$client_ip;
 
-            $country_code = Geoip3::instance()->country_code($ip_address);
+            $reader = new Reader(storage_path().'/GeoLite2-Country.mmdb');
+
+            try {
+                $record = $reader->country($ip_address);//'91.126.239.140'
+                $countryCode = $record->country->isoCode;
+            } catch (\Exception $e) {
+                $countryCode = NULL;
+            }
+            
         }
 
-        return $country_code;
+        return $countryCode;
     }
 
 
 
     /**
      * get country name from a country code, in case not set get by ip
-     * @param  string $country_code [description]
+     * @param  string $countryCode [description]
      * @param  string $ip_address 
      * @return string
      */
-    public static function country_name($country_code=NULL, $ip_address=NULL)
+    public static function countryName($countryCode = NULL, $ip_address = NULL)
     {
-        if ($country_code===NULL OR empty($country_code))
-            $country_code = self::country_code($ip_address);
+        if ($countryCode===NULL OR empty($countryCode))
+            $countryCode = self::countryCodeByIP($ip_address);
 
-        return (isset(self::$countries[$country_code]))?self::$countries[$country_code]:NULL;
+        return (isset(self::$countries[$countryCode]))?self::$countries[$countryCode]:NULL;
     }
 
     /**
      * verifies vies number
-     * @param  string $vat_number   
-     * @param  string $country_code 
+     * @param  string $vatNumber   
+     * @param  string $countryCode 
      * @return boolean               
      */
-    public static function check($vat_number,$country_code=NULL)
+    public static function check($vatNumber,$countryCode=NULL)
     {
-        $result = self::companyInfo($vat_number,$country_code)['valid'];
+        $result = self::companyInfo($vatNumber,$countryCode)['valid'];
         return [ 'valid' => $result ];
     }
 
     
-    public static function companyInfo($vat_number,$country_code=NULL)
+    public static function companyInfo($vatNumber,$countryCode=NULL)
     {
-        if ($country_code === NULL)
+        if ($countryCode === NULL)
         {
             //try extract from VAT TODO
         }
 
-        $country_code = strtoupper($country_code);
+        $countryCode = strtoupper($countryCode);
 
         //first check if country is part of EU 
-        if ( strlen($country_code)==2 AND strlen($vat_number)>=4 AND (array_key_exists($country_code, self::get_vat_rates())) )
+        if ( strlen($countryCode)==2 AND strlen($vatNumber)>=4 AND (array_key_exists($countryCode, self::getVatRates())) )
         {
             //USAGE of APC cache!!
-            $key = 'companyInfo::'.$country_code.$vat_number;
+            $key = 'companyInfo::'.$countryCode.$vatNumber;
 
             if ( ($result = Cache::get($key)) == NULL )
             {
                 $client = new \SoapClient("http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl");
-                $result = $client->checkVatApprox(array('countryCode' => $country_code,'vatNumber' => $vat_number));
+                $result = $client->checkVatApprox(array('countryCode' => $countryCode,'vatNumber' => $vatNumber));
                 Cache::put($key,$result,30*24*60);//30 days cached
             }
             
@@ -100,11 +111,7 @@ class euvat {
                 unset($result['requestIdentifier']);
 
                 //get vat rates
-                $vatRate = self::get_vat_rates()[$country_code];
-                unset($vatRate['_comment']);
-                unset($vatRate['country']);
-                unset($vatRate['iso_duplicate_of']);
-                $result['vatRate'] = $vatRate;
+                $result['vatRate'] = euvat::vatByCountry($countryCode);
 
                 return $result;
             }
@@ -115,34 +122,41 @@ class euvat {
 
     /**
      * its a valid vat country?
-     * @param  strinf  $country_code 
+     * @param  strinf  $countryCode 
      * @return boolean               
      */
-    public static function is_eu_country($country_code=NULL)
+    public static function isEUcountry($countryCode = NULL)
     {   
-        if ($country_code===NULL OR empty($country_code))
-            $country_code = self::country_code();
+        if ($countryCode===NULL OR empty($countryCode))
+            $countryCode = self::countryCode();
 
-        $country_code = strtoupper($country_code);
+        $countryCode = strtoupper($countryCode);
 
-        $eu_rate = self::get_vat_rates();
+        $eu_rate = self::getVatRates();
 
-        return isset($eu_rate[$country_code]);
+        return isset($eu_rate[$countryCode]);
     }
 
     /**
      * get VAT for the copuntry
-     * @param  strinf  $country_code 
+     * @param  strinf  $countryCode 
      * @return integer               
      */
-    public static function vat_by_country($country_code)
+    public static function vatByCountry($countryCode)
     {
-        $eu_rate = self::get_vat_rates();
+        $eu_rate = self::getVatRates();
 
-        $country_code = strtoupper($country_code);
+        $countryCode = strtoupper($countryCode);
 
-        if ( isset($eu_rate[$country_code]) AND  is_numeric($eu_rate[$country_code]['standard_rate']) )
-            return $eu_rate[$country_code]['standard_rate'];
+        if ( isset($eu_rate[$countryCode]) AND  is_numeric($eu_rate[$countryCode]['standard_rate']) )
+        {
+            $vatRate = $eu_rate[$countryCode];
+            unset($vatRate['_comment']);
+            unset($vatRate['country']);
+            unset($vatRate['iso_duplicate_of']);
+
+            return $vatRate;
+        }
         else 
             return FALSE;
     }
@@ -153,7 +167,7 @@ class euvat {
      * @param  boolean $reload  
      * @return void
      */
-    public static function get_vat_rates($reload = FALSE)
+    public static function getVatRates($reload = FALSE)
     {
         //we check the date of our local versions.php
         $vat_rates_file = realpath(dirname(__FILE__)).'/../public/rates.json';

@@ -82,6 +82,8 @@
           <div class="mastfoot">
             <div class="inner">
               <p>Made by <a href="https://chema.ga.com">Chema</a> Thanks to <a href="https://github.com/ivolo/disposable-email-domains/">Disposable Emails</a></p>
+              This product includes GeoLite2 data created by MaxMind, available from
+<a href="http://www.maxmind.com">http://www.maxmind.com</a>.
             </div>
           </div>
 
