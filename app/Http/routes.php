@@ -15,31 +15,35 @@ use Illuminate\Http\Request;
 
 $app->get('/', function () use ($app) {
     return view('home');
-    //return $app->version();
 });
 
 
-$app->group(['prefix' => 'api/v1','namespace' => 'Http\Controllers'], function($app)
+$app->group(['prefix' => 'api','namespace' => 'Http\Controllers'], function($app)
 {
-
+    
     //full info for that company
-    $app->get('info/{countryCode}/{vatnumber}',function($countryCode,$vatnumber){
-        return euvat::companyInfo($vatnumber,$countryCode);
+    $app->get('info/{vatnumber}',function($vatnumber){
+        return euvat::companyInfo($vatnumber);
     });  
 
     //just tell me if the company is EU
-    $app->get('check/{countryCode}/{vatnumber}',function($countryCode,$vatnumber){
-        return euvat::check($vatnumber,$countryCode);
+    $app->get('validate/{vatnumber}',function($vatnumber){
+        return euvat::validate($vatnumber);
     });  
 
     //gets the rate for that country
     $app->get('rate/{countryCode}/',function($countryCode){
-        return ['standard_rate' => euvat::vatByCountry($countryCode)];
+        return ['vat' => euvat::vatByCountry($countryCode)];
+    }); 
+
+     //gets the rate for that country
+    $app->get('calc/{countryCode}/{amount}/',function($countryCode,$amount){
+        return euvat::calc($countryCode,$amount);
     });  
 
     //check if countryCode is european union
     $app->get('iseu/{countryCode}/',function($countryCode){
-        return ['is_eu_country' => euvat::isEUcountry($countryCode)];
+        return euvat::isEUcountry($countryCode);
     });  
 
     //rates.json
@@ -48,40 +52,8 @@ $app->group(['prefix' => 'api/v1','namespace' => 'Http\Controllers'], function($
     });  
 
     //to which country belongs this ip? how much do I need to charge him ;)
-    $app->get('ip/{ipaddress}', function ($ipaddress = null, Request $request) {
-
-        $countryCode = NULL;
-
-        //hack to detect the clients ip...nasty
-        if ($ipaddress === 'detect')
-        {
-            $ipaddress = $request->ip();
-
-            //cloudflare hack saves geoip search ;)
-            if (!empty($_SERVER["HTTP_CF_IPCOUNTRY"]))
-                $countryCode = $_SERVER["HTTP_CF_IPCOUNTRY"];
-        }
-
-        //only if we do not have the country code
-        if ($countryCode === NULL)
-            $countryCode = euvat::countryCodeByIP($ipaddress);
-
-        //we could not resolve the country for this ip...
-        if ($countryCode === NULL)
-            return ['result' => 'country code not found', 'ip_address' => $ipaddress ];
-        else
-            return  [
-                    'country_code'  => $countryCode,
-                    'country_name'  => euvat::countryName($countryCode),
-                    'VAT'           => euvat::vatByCountry($countryCode),
-                    'ip_address'    => $ipaddress
-                    ];
-
-    });
-
-
-
-    //$app->get('product','ProductController@getProducts'); 
-    //$app->get('product/{id}','ProductController@getProduct');          
+    $app->get('ip/{ipaddress}', function ($ipaddress, Request $request) {
+        return euvat::countryCodeByIP($ipaddress,$request);
+    }); 
 
 });
