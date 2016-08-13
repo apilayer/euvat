@@ -11,6 +11,17 @@
 
     <title>EU VAT - FREE European VAT API, validate VAT number, get company information, calculate rates, get rates by ip</title>
 
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-4562297-29', 'auto');
+      ga('send', 'pageview');
+
+    </script>
+
     <!-- Bootstrap Core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <!-- Theme CSS -->
@@ -95,7 +106,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12 text-center">
-                    <h2>API end points</h2>
+                    <h2>API endpoints</h2>
                     <hr class="star-primary">
                 </div>
             </div>
@@ -155,10 +166,11 @@
                     <div class="footer-col col-md-4">
                         <h3>Thanks to</h3>
                         <p>
-                            <a href="https://lumen.laravel.com/">Lumen</a>, 
-                            <a href="https://euvatrates.com/">EU VAT Rates</a>, 
-                            <a href="http://www.maxmind.com">Maxmind</a>, 
-                            <a href="https://startbootstrap.com/" >StartBootstrap</a>.
+                            <a href="https://yclas.com/">Yclas</a>
+                            <a href="https://lumen.laravel.com/" rel="nofollow">Lumen</a>, 
+                            <a href="https://euvatrates.com/" rel="nofollow">EU VAT Rates</a>, 
+                            <a href="http://www.maxmind.com" rel="nofollow">Maxmind</a>, 
+                            <a href="https://startbootstrap.com/" rel="nofollow">StartBootstrap</a>.
                         </p>
                     </div>
                     <div class="footer-col col-md-4">
