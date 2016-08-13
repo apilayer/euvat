@@ -172,7 +172,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-lg-12">
-                        Copyright &copy; euvat.ga 2016
+                        Copyright &copy; 2016<script>new Date().getFullYear()>2016&&document.write("-"+new Date().getFullYear());</script>, euvat.ga
                     </div>
                 </div>
             </div>
