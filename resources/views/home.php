@@ -172,6 +172,7 @@
                             <a href="https://euvatrates.com/" rel="nofollow">EU VAT Rates</a>, 
                             <a href="http://www.maxmind.com" rel="nofollow">Maxmind</a>, 
                             <a href="https://startbootstrap.com/" rel="nofollow">StartBootstrap</a>.
+                            <a href="https://github.com/rinvex/country" rel="nofollow">rinvex</a>.
                         </p>
                     </div>
                     <div class="footer-col col-md-4">
