@@ -1,6 +1,8 @@
 <?php
 use App\euvat;
+use App\emailvalidator;
 use Illuminate\Http\Request;
+use Rinvex\Country\Models\Country;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,6 +56,12 @@ $app->group(['prefix' => 'api','namespace' => 'Http\Controllers'], function($app
     //to which country belongs this ip? how much do I need to charge him ;)
     $app->get('ip/{ipaddress}', function ($ipaddress, Request $request) {
         return euvat::countryCodeByIP($ipaddress,$request);
-    }); 
+    });
+
+    //returns country information
+    $app->get('country/{countryCode}',function($countryCode){
+        $countryInfo = (new Country)->find(strtoupper($countryCode));
+        return ($countryInfo!==NULL)?$countryInfo:['result'=>'Country code not found '.$countryCode];
+    });  
 
 });

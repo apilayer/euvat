@@ -121,6 +121,7 @@
                     Get VAT by IP <code>https://euvat.ga/api/ip/IPADDRESS</code><br>
                     Get VAT by IP auto detect <code>https://euvat.ga/api/ip/detect</code><br>
                     Calculate amount to pay <code>https://euvat.ga/api/calc/COUNTRYCODE/AMOUNT</code><br>
+                    Returns country information <code>https://euvat.ga/api/country/COUNTRYCODE</code><br>
                 <br>
                 Country code needs to be in ISO 3166-1 alpha-2, Example ES=Spain, DK=Denmark etc. List <a href="rates.json">here</a>
                 </p>
