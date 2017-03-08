@@ -213,7 +213,7 @@ class euvat {
         if (!file_exists($vat_rates_file) OR time() > strtotime('+1 month',filemtime($vat_rates_file)) OR $reload === TRUE )
         {
             //read from external source http://wceuvatcompliance.s3.amazonaws.com/rates.json OR https://euvatrates.com/rates.json
-            $file = file_get_contents('https://euvatrates.com/rates.json?r='.time());
+            $file = file_get_contents('https://wceuvatcompliance.s3.amazonaws.com/rates.json?r='.time());
             
             if ($file!==NULL)
                 file_put_contents($vat_rates_file, $file);
